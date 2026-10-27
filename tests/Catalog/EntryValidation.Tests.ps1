@@ -1,5 +1,6 @@
 BeforeAll {
     . "$PSScriptRoot/../../src/Catalog/EntryVocabulary.ps1"
+    . "$PSScriptRoot/../../src/Catalog/SourceValidation.ps1"
     . "$PSScriptRoot/../../src/Catalog/EntryValidation.ps1"
 
     function Get-ValidSoftwareManifest {
@@ -11,6 +12,8 @@ BeforeAll {
             description = 'An example tool.'
             licenseType = 'open-source'
             upstreamUrl = 'https://example.com'
+            versionSource    = [pscustomobject]@{ type = 'github-releases'; repository = 'owner/name' }
+            installDetection = [pscustomobject]@{ type = 'file-version'; path = 'C:\\tool.exe' }
         }
     }
 }
@@ -60,5 +63,28 @@ Describe 'Get-ManifestErrors' {
         $manifest.kind = 'widget'
 
         Get-ManifestErrors -Manifest $manifest | Should -Match "Unknown kind 'widget'"
+    }
+}
+
+Describe 'Get-ManifestErrors for version sources' {
+    It 'rejects an unknown version source type' {
+        $manifest = Get-ValidSoftwareManifest
+        $manifest.versionSource.type = 'carrier-pigeon'
+
+        Get-ManifestErrors -Manifest $manifest | Should -Match "Unknown versionSource type 'carrier-pigeon'"
+    }
+
+    It 'requires a repository for github-releases' {
+        $manifest = Get-ValidSoftwareManifest
+        $manifest.versionSource.repository = ''
+
+        Get-ManifestErrors -Manifest $manifest | Should -Match "needs a 'repository'"
+    }
+
+    It 'requires a path for file-version detection' {
+        $manifest = Get-ValidSoftwareManifest
+        $manifest.installDetection.path = ''
+
+        Get-ManifestErrors -Manifest $manifest | Should -Match "needs a 'path'"
     }
 }

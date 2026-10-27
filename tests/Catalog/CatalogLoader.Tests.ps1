@@ -1,5 +1,6 @@
 BeforeAll {
     . "$PSScriptRoot/../../src/Catalog/EntryVocabulary.ps1"
+    . "$PSScriptRoot/../../src/Catalog/SourceValidation.ps1"
     . "$PSScriptRoot/../../src/Catalog/EntryValidation.ps1"
     . "$PSScriptRoot/../../src/Catalog/CatalogLoader.ps1"
 
@@ -14,6 +15,8 @@ BeforeAll {
             description = 'An example tool.'
             licenseType = 'open-source'
             upstreamUrl = 'https://example.com'
+            versionSource    = @{ type = 'github-releases'; repository = 'owner/name' }
+            installDetection = @{ type = 'file-version'; path = 'C:\\tool.exe' }
         } | ConvertTo-Json | Set-Content -Path (Join-Path $Directory $FileName)
     }
 }

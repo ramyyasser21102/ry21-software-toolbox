@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Position = 0)]
-    [ValidateSet('list')]
+    [ValidateSet('list', 'outdated')]
     [string]$Command = 'list'
 )
 
@@ -14,4 +14,5 @@ $entriesDirectory = Join-Path $PSScriptRoot 'entries'
 
 switch ($Command) {
     'list' { Invoke-ListCommand -EntriesDirectory $entriesDirectory }
+    'outdated' { Invoke-OutdatedCommand -EntriesDirectory $entriesDirectory }
 }
