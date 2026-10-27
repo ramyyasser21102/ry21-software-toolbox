@@ -1,0 +1,13 @@
+{
+  "name": "hwinfo",
+  "kind": "software",
+  "category": "monitoring",
+  "platforms": ["windows"],
+  "description": "Detailed hardware information and live sensor monitoring.",
+  "licenseType": "free-personal-use",
+  "upstreamUrl": "https://www.hwinfo.com/",
+  "versionSource": { "type": "winget", "packageId": "REALiX.HWiNFO" },
+  "installDetection": { "type": "winget-list", "packageId": "REALiX.HWiNFO" },
+  "delivery": { "type": "winget", "packageId": "REALiX.HWiNFO" },
+  "requiresAdmin": true
+}
