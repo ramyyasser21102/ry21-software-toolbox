@@ -13,7 +13,7 @@ BeforeAll {
     . "$PSScriptRoot/../../src/Updates/Elevation.ps1"
     . "$PSScriptRoot/../../src/Tweaks/TweakRunner.ps1"
     . "$PSScriptRoot/../../src/Tweaks/ScriptRunner.ps1"
-    . "$PSScriptRoot/../../src/Cli/TweakCommands.ps1"
+    . "$PSScriptRoot/../../src/Cli/ChangeCommands.ps1"
 
     function Write-TweakFixture {
         param([string]$Directory, [bool]$WithUndoFile = $true, [bool]$RequiresAdmin = $false)

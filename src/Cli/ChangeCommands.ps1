@@ -1,16 +1,27 @@
-function Get-ChangeActions {
-    param([Parameter(Mandatory)][psobject]$Entry)
+function Show-ChangePreview {
+    param(
+        [Parameter(Mandatory)][psobject]$Entry,
+        [Parameter(Mandatory)][string]$FilePath
+    )
 
     if ($Entry.kind -eq 'registry-tweak') {
-        return @{
-            Show = { param($Path) Show-TweakChanges -Entry $Entry -RegFilePath $Path }.GetNewClosure()
-            Run  = { param($Path) Import-RegFile -Path $Path }
-        }
+        Show-TweakChanges -Entry $Entry -RegFilePath $FilePath
+        return
     }
-    return @{
-        Show = { param($Path) Show-ScriptPreview -Entry $Entry -ScriptPath $Path }.GetNewClosure()
-        Run  = { param($Path) Invoke-ScriptFile -Path $Path }
+    Show-ScriptPreview -Entry $Entry -ScriptPath $FilePath
+}
+
+function Invoke-ChangeFile {
+    param(
+        [Parameter(Mandatory)][psobject]$Entry,
+        [Parameter(Mandatory)][string]$FilePath
+    )
+
+    if ($Entry.kind -eq 'registry-tweak') {
+        Import-RegFile -Path $FilePath
+        return
     }
+    Invoke-ScriptFile -Path $FilePath
 }
 
 function Invoke-EntryChange {
@@ -21,9 +32,8 @@ function Invoke-EntryChange {
     )
 
     Assert-EntryCanRun -Entry $Entry
-    $actions = Get-ChangeActions -Entry $Entry
     $filePath = $Direction -eq 'apply' ? $Entry.applyFilePath : $Entry.undoFilePath
-    & $actions.Show $filePath
+    Show-ChangePreview -Entry $Entry -FilePath $filePath
     if (-not ($SkipConfirmation -or (Confirm-ToolboxAction -Question "Really $Direction '$($Entry.name)'?"))) {
         return "Cancelled: '$($Entry.name)' was not changed."
     }
@@ -31,7 +41,7 @@ function Invoke-EntryChange {
     if ($Direction -eq 'apply') {
         $backups = @(Backup-AffectedKeys -Entry $Entry -BackupDirectory (Get-BackupDirectory) -Timestamp (Get-Date))
     }
-    & $actions.Run $filePath
+    Invoke-ChangeFile -Entry $Entry -FilePath $filePath
     return Format-ChangeResult -Entry $Entry -Direction $Direction -Backups $backups
 }
 
