@@ -17,7 +17,7 @@ function Get-SignedLabel {
     param([Parameter(Mandatory)][psobject]$Entry)
 
     if (-not $Entry.verification) {
-        return $null
+        return $Entry.delivery.type -eq 'winget' ? 'via winget' : $null
     }
     return $Entry.verification.signer -eq 'none' ? 'unsigned' : 'signed'
 }

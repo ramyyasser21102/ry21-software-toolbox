@@ -1,0 +1,13 @@
+{
+  "name": "vlc",
+  "kind": "software",
+  "category": "media",
+  "platforms": ["windows"],
+  "description": "Free media player for most audio and video formats.",
+  "licenseType": "open-source",
+  "upstreamUrl": "https://www.videolan.org/vlc/",
+  "versionSource": { "type": "winget", "packageId": "VideoLAN.VLC" },
+  "installDetection": { "type": "winget-list", "packageId": "VideoLAN.VLC" },
+  "delivery": { "type": "winget", "packageId": "VideoLAN.VLC" },
+  "requiresAdmin": true
+}
