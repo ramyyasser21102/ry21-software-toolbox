@@ -30,6 +30,10 @@ function Get-ChecksumTypes {
     'github-asset-digest'
 }
 
+function Get-ScriptExtensions {
+    '.ps1', '.sh'
+}
+
 function Get-RequiredManifestFields {
     param([Parameter(Mandatory)][string]$Kind)
 
@@ -37,6 +41,7 @@ function Get-RequiredManifestFields {
     switch ($Kind) {
         'software' { return $fieldsEveryKindNeeds + 'licenseType', 'upstreamUrl', 'versionSource', 'installDetection', 'delivery' }
         'registry-tweak' { return $fieldsEveryKindNeeds + 'applyFile', 'undoFile', 'affectedKeys' }
+        'script' { return $fieldsEveryKindNeeds + 'applyFile', 'undoFile' }
         default { return $fieldsEveryKindNeeds }
     }
 }

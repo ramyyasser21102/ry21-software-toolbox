@@ -4,6 +4,9 @@ function Get-SourceErrors {
     if ($Manifest.kind -eq 'registry-tweak') {
         return Get-TweakErrors -Manifest $Manifest
     }
+    if ($Manifest.kind -eq 'script') {
+        return Get-ScriptErrors -Manifest $Manifest
+    }
     if ($Manifest.kind -ne 'software') {
         return @()
     }
