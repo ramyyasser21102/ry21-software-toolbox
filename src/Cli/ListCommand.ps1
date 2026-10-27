@@ -9,6 +9,7 @@ function Format-EntryListRows {
             Platform = $_.platforms -join ', '
             License  = $_.licenseType
             Signed   = Get-SignedLabel -Entry $_
+            Risk     = Get-RiskLabel -Entry $_
         }
     }
 }
@@ -20,6 +21,12 @@ function Get-SignedLabel {
         return $Entry.delivery.type -eq 'winget' ? 'via winget' : $null
     }
     return $Entry.verification.signer -eq 'none' ? 'unsigned' : 'signed'
+}
+
+function Get-RiskLabel {
+    param([Parameter(Mandatory)][psobject]$Entry)
+
+    return $Entry.kind -in 'registry-tweak', 'script' ? 'risky' : $null
 }
 
 function Invoke-ListCommand {

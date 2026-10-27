@@ -1,0 +1,11 @@
+{
+  "name": "show-file-extensions",
+  "kind": "registry-tweak",
+  "category": "tweaks",
+  "platforms": ["windows"],
+  "description": "Shows file name extensions (like .txt) in File Explorer.",
+  "applyFile": "show-file-extensions.reg",
+  "undoFile": "show-file-extensions-undo.reg",
+  "affectedKeys": ["HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced"],
+  "requiresAdmin": false
+}

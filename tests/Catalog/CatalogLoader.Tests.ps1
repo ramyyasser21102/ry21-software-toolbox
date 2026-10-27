@@ -1,8 +1,11 @@
 BeforeAll {
     . "$PSScriptRoot/../../src/Catalog/EntryVocabulary.ps1"
     . "$PSScriptRoot/../../src/Catalog/SourceValidation.ps1"
+    . "$PSScriptRoot/../../src/Catalog/TweakValidation.ps1"
     . "$PSScriptRoot/../../src/Catalog/DeliveryValidation.ps1"
     . "$PSScriptRoot/../../src/Catalog/EntryValidation.ps1"
+    . "$PSScriptRoot/../../src/Catalog/TweakFiles.ps1"
+    . "$PSScriptRoot/../../src/Tweaks/RegFileText.ps1"
     . "$PSScriptRoot/../../src/Catalog/CatalogLoader.ps1"
 
     function Write-Manifest {
