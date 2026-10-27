@@ -34,8 +34,9 @@ function Get-RequiredManifestFields {
     param([Parameter(Mandatory)][string]$Kind)
 
     $fieldsEveryKindNeeds = 'name', 'kind', 'category', 'platforms', 'description'
-    if ($Kind -eq 'software') {
-        return $fieldsEveryKindNeeds + 'licenseType', 'upstreamUrl', 'versionSource', 'installDetection', 'delivery'
+    switch ($Kind) {
+        'software' { return $fieldsEveryKindNeeds + 'licenseType', 'upstreamUrl', 'versionSource', 'installDetection', 'delivery' }
+        'registry-tweak' { return $fieldsEveryKindNeeds + 'applyFile', 'undoFile', 'affectedKeys' }
+        default { return $fieldsEveryKindNeeds }
     }
-    return $fieldsEveryKindNeeds
 }

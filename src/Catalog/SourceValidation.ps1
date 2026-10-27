@@ -1,6 +1,9 @@
 function Get-SourceErrors {
     param([Parameter(Mandatory)][psobject]$Manifest)
 
+    if ($Manifest.kind -eq 'registry-tweak') {
+        return Get-TweakErrors -Manifest $Manifest
+    }
     if ($Manifest.kind -ne 'software') {
         return @()
     }

@@ -1,11 +1,13 @@
 [CmdletBinding()]
 param(
     [Parameter(Position = 0)]
-    [ValidateSet('list', 'outdated', 'update')]
+    [ValidateSet('list', 'outdated', 'update', 'apply', 'undo')]
     [string]$Command = 'list',
 
     [Parameter(Position = 1)]
-    [string]$Name
+    [string]$Name,
+
+    [switch]$Yes
 )
 
 $ErrorActionPreference = 'Stop'
@@ -19,4 +21,6 @@ switch ($Command) {
     'list' { Invoke-ListCommand -EntriesDirectory $entriesDirectory }
     'outdated' { Invoke-OutdatedCommand -EntriesDirectory $entriesDirectory }
     'update' { Invoke-UpdateCommand -EntriesDirectory $entriesDirectory -Name $Name }
+    'apply' { Invoke-ApplyCommand -EntriesDirectory $entriesDirectory -Name $Name -SkipConfirmation:$Yes }
+    'undo' { Invoke-UndoCommand -EntriesDirectory $entriesDirectory -Name $Name -SkipConfirmation:$Yes }
 }
