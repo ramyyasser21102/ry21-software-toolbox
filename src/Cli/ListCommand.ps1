@@ -8,8 +8,18 @@ function Format-EntryListRows {
             Category = $_.category
             Platform = $_.platforms -join ', '
             License  = $_.licenseType
+            Signed   = Get-SignedLabel -Entry $_
         }
     }
+}
+
+function Get-SignedLabel {
+    param([Parameter(Mandatory)][psobject]$Entry)
+
+    if (-not $Entry.verification) {
+        return $null
+    }
+    return $Entry.verification.signer -eq 'none' ? 'unsigned' : 'signed'
 }
 
 function Invoke-ListCommand {

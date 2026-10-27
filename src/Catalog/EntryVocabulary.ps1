@@ -22,12 +22,20 @@ function Get-InstallDetectionTypes {
     'file-version'
 }
 
+function Get-DeliveryTypes {
+    'portable-zip'
+}
+
+function Get-ChecksumTypes {
+    'github-asset-digest'
+}
+
 function Get-RequiredManifestFields {
     param([Parameter(Mandatory)][string]$Kind)
 
     $fieldsEveryKindNeeds = 'name', 'kind', 'category', 'platforms', 'description'
     if ($Kind -eq 'software') {
-        return $fieldsEveryKindNeeds + 'licenseType', 'upstreamUrl', 'versionSource', 'installDetection'
+        return $fieldsEveryKindNeeds + 'licenseType', 'upstreamUrl', 'versionSource', 'installDetection', 'delivery', 'verification'
     }
     return $fieldsEveryKindNeeds
 }

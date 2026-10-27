@@ -1,6 +1,7 @@
 BeforeAll {
     . "$PSScriptRoot/../../src/Catalog/EntryVocabulary.ps1"
     . "$PSScriptRoot/../../src/Catalog/SourceValidation.ps1"
+    . "$PSScriptRoot/../../src/Catalog/DeliveryValidation.ps1"
     . "$PSScriptRoot/../../src/Catalog/EntryValidation.ps1"
 
     function Get-ValidSoftwareManifest {
@@ -14,6 +15,8 @@ BeforeAll {
             upstreamUrl = 'https://example.com'
             versionSource    = [pscustomobject]@{ type = 'github-releases'; repository = 'owner/name' }
             installDetection = [pscustomobject]@{ type = 'file-version'; path = 'C:\\tool.exe' }
+            delivery         = [pscustomobject]@{ type = 'portable-zip'; assetName = 'tool.zip' }
+            verification     = [pscustomobject]@{ checksum = 'github-asset-digest'; signer = 'none'; }
         }
     }
 }
@@ -86,5 +89,28 @@ Describe 'Get-ManifestErrors for version sources' {
         $manifest.installDetection.path = ''
 
         Get-ManifestErrors -Manifest $manifest | Should -Match "needs a 'path'"
+    }
+}
+
+Describe 'Get-ManifestErrors for delivery and verification' {
+    It 'requires an asset name for a portable zip' {
+        $manifest = Get-ValidSoftwareManifest
+        $manifest.delivery.assetName = ''
+
+        Get-ManifestErrors -Manifest $manifest | Should -Match "needs an 'assetName'"
+    }
+
+    It 'requires the signer to be named or explicitly none' {
+        $manifest = Get-ValidSoftwareManifest
+        $manifest.verification.signer = ''
+
+        Get-ManifestErrors -Manifest $manifest | Should -Match "needs a 'signer'"
+    }
+
+    It 'rejects an unknown checksum type' {
+        $manifest = Get-ValidSoftwareManifest
+        $manifest.verification.checksum = 'trust-me'
+
+        Get-ManifestErrors -Manifest $manifest | Should -Match "Unknown checksum type 'trust-me'"
     }
 }
