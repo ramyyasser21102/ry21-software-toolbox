@@ -9,9 +9,27 @@ function Confirm-ToolboxAction {
     return (Read-Host "$Question [y/N]") -match '^(y|yes)$'
 }
 
-function Assert-TweakCanRun {
+function Get-CurrentPlatform {
+    if ($IsWindows) { return 'windows' }
+    return $IsLinux ? 'linux' : 'macos'
+}
+
+function Test-PlatformSupported {
+    param(
+        [Parameter(Mandatory)][string[]]$Platforms,
+        [Parameter(Mandatory)][string]$CurrentPlatform
+    )
+
+    return $CurrentPlatform -in $Platforms
+}
+
+function Assert-EntryCanRun {
     param([Parameter(Mandatory)][psobject]$Entry)
 
+    $currentPlatform = Get-CurrentPlatform
+    if (-not (Test-PlatformSupported -Platforms @($Entry.platforms) -CurrentPlatform $currentPlatform)) {
+        throw "'$($Entry.name)' is for $(@($Entry.platforms) -join ', ') but this machine is $currentPlatform."
+    }
     if (Test-NeedsElevation -RequiresAdmin ([bool]$Entry.requiresAdmin) -IsElevated (Test-IsElevated)) {
         throw "'$($Entry.name)' changes machine-wide settings. Re-run this command from an elevated (administrator) PowerShell."
     }

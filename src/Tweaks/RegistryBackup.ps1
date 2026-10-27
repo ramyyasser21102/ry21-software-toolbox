@@ -17,7 +17,8 @@ function Backup-AffectedKeys {
     )
 
     New-Item -ItemType Directory -Path $BackupDirectory -Force | Out-Null
-    foreach ($keyPath in @($Entry.affectedKeys)) {
+    $keyPaths = @($Entry.affectedKeys) | Where-Object { $_ }
+    foreach ($keyPath in $keyPaths) {
         if (-not (Test-RegistryKeyExists -KeyPath $keyPath)) { continue }
         $fileName = Get-BackupFileName -EntryName $Entry.name -KeyPath $keyPath -Timestamp $Timestamp
         $destinationPath = Join-Path $BackupDirectory $fileName

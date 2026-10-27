@@ -20,8 +20,8 @@ function Read-EntryManifest {
     if ($errors.Count -gt 0) {
         throw "Manifest '$Path' is invalid:`n - $($errors -join "`n - ")"
     }
-    if ($manifest.kind -eq 'registry-tweak') {
-        Add-TweakFilePaths -Manifest $manifest -ManifestPath $Path
+    if ($manifest.kind -in 'registry-tweak', 'script') {
+        Add-ChangeFilePaths -Manifest $manifest -ManifestPath $Path
     }
     return $manifest
 }

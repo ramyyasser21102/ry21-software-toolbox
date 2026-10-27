@@ -4,7 +4,7 @@ BeforeAll {
     . "$PSScriptRoot/../../src/Catalog/DeliveryValidation.ps1"
     . "$PSScriptRoot/../../src/Catalog/TweakValidation.ps1"
     . "$PSScriptRoot/../../src/Catalog/EntryValidation.ps1"
-    . "$PSScriptRoot/../../src/Catalog/TweakFiles.ps1"
+    . "$PSScriptRoot/../../src/Catalog/ChangeFiles.ps1"
     . "$PSScriptRoot/../../src/Catalog/CatalogLoader.ps1"
     . "$PSScriptRoot/../../src/Catalog/EntryLookup.ps1"
     . "$PSScriptRoot/../../src/Tweaks/RegFileText.ps1"
@@ -12,6 +12,7 @@ BeforeAll {
     . "$PSScriptRoot/../../src/Tweaks/RegistryBackup.ps1"
     . "$PSScriptRoot/../../src/Updates/Elevation.ps1"
     . "$PSScriptRoot/../../src/Tweaks/TweakRunner.ps1"
+    . "$PSScriptRoot/../../src/Tweaks/ScriptRunner.ps1"
     . "$PSScriptRoot/../../src/Cli/TweakCommands.ps1"
 
     function Write-TweakFixture {
@@ -59,6 +60,7 @@ Describe 'Invoke-ApplyCommand' {
         Write-TweakFixture -Directory $entriesDirectory
         $callLog = [System.Collections.Generic.List[string]]::new()
         Mock Test-IsElevated { $false }
+        Mock Get-CurrentPlatform { 'windows' }
         Mock Show-TweakChanges {}
         Mock Backup-AffectedKeys { $callLog.Add('backup'); 'C:\backups\one.reg' }
         Mock Import-RegFile { $callLog.Add("import $(Split-Path $Path -Leaf)") }
@@ -98,9 +100,11 @@ Describe 'Invoke-ApplyCommand' {
 
 Describe 'Invoke-UndoCommand' {
     It 'imports the undo file after confirmation' {
+        Mock Get-CurrentPlatform { 'windows' }
         $entriesDirectory = New-Item -ItemType Directory -Path (Join-Path $TestDrive ([guid]::NewGuid()))
         Write-TweakFixture -Directory $entriesDirectory
         Mock Test-IsElevated { $false }
+        Mock Get-CurrentPlatform { 'windows' }
         Mock Show-TweakChanges {}
         Mock Confirm-ToolboxAction { $true }
         Mock Import-RegFile {}
@@ -108,5 +112,64 @@ Describe 'Invoke-UndoCommand' {
         Invoke-UndoCommand -EntriesDirectory $entriesDirectory -Name 'example-tweak' | Should -Match 'undone'
 
         Should -Invoke Import-RegFile -Times 1 -ParameterFilter { $Path -like '*tweak-undo.reg' }
+    }
+}
+
+Describe 'Script entries' {
+    BeforeEach {
+        $entriesDirectory = New-Item -ItemType Directory -Path (Join-Path $TestDrive ([guid]::NewGuid()))
+        Set-Content -Path (Join-Path $entriesDirectory 'run.ps1') -Value 'Write-Output apply'
+        Set-Content -Path (Join-Path $entriesDirectory 'run-undo.ps1') -Value 'Write-Output undo'
+        @{
+            name = 'example-script'; kind = 'script'; category = 'tweaks'; platforms = @('windows')
+            description = 'An example script.'; applyFile = 'run.ps1'; undoFile = 'run-undo.ps1'
+        } | ConvertTo-Json | Set-Content -Path (Join-Path $entriesDirectory 'script.json')
+        $callLog = [System.Collections.Generic.List[string]]::new()
+        Mock Test-IsElevated { $false }
+        Mock Get-CurrentPlatform { 'windows' }
+        Mock Show-ScriptPreview { $callLog.Add('preview') }
+        Mock Backup-AffectedKeys { $callLog.Add('backup') }
+        Mock Invoke-ScriptFile { $callLog.Add("run $(Split-Path $Path -Leaf)") }
+    }
+
+    It 'previews, asks, then runs the script' {
+        Mock Confirm-ToolboxAction { $callLog.Add('confirm'); $true }
+
+        Invoke-ApplyCommand -EntriesDirectory $entriesDirectory -Name 'example-script' | Should -Match 'applied'
+
+        $callLog | Should -Be 'preview', 'confirm', 'backup', 'run run.ps1'
+    }
+
+    It 'runs the undo script on undo' {
+        Invoke-UndoCommand -EntriesDirectory $entriesDirectory -Name 'example-script' -SkipConfirmation | Should -Match 'undone'
+
+        $callLog | Should -Be 'preview', 'run run-undo.ps1'
+    }
+
+    It 'runs nothing when the user declines' {
+        Mock Confirm-ToolboxAction { $false }
+
+        Invoke-ApplyCommand -EntriesDirectory $entriesDirectory -Name 'example-script' | Should -Match 'Cancelled'
+
+        $callLog | Should -Be 'preview'
+    }
+
+    It 'refuses to run on a platform the entry does not support' {
+        Mock Get-CurrentPlatform { 'linux' }
+
+        { Invoke-ApplyCommand -EntriesDirectory $entriesDirectory -Name 'example-script' -SkipConfirmation } | Should -Throw '*is for windows but this machine is linux*'
+    }
+
+    It 'is rejected without an undo file' {
+        Remove-Item (Join-Path $entriesDirectory 'run-undo.ps1')
+
+        { Read-CatalogEntries -EntriesDirectory $entriesDirectory } | Should -Throw "*undoFile 'run-undo.ps1' but that file does not exist*"
+    }
+
+    It 'is rejected with an unsupported script type' {
+        $manifestPath = Join-Path $entriesDirectory 'script.json'
+        (Get-Content $manifestPath -Raw) -replace 'run.ps1', 'run.exe' | Set-Content $manifestPath
+
+        { Read-CatalogEntries -EntriesDirectory $entriesDirectory } | Should -Throw "*applyFile 'run.exe' must end in one of*"
     }
 }

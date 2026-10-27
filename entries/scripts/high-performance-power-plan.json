@@ -1,0 +1,10 @@
+{
+  "name": "high-performance-power-plan",
+  "kind": "script",
+  "category": "tweaks",
+  "platforms": ["windows"],
+  "description": "Switches the active Windows power plan to High performance.",
+  "applyFile": "high-performance-power-plan.ps1",
+  "undoFile": "high-performance-power-plan-undo.ps1",
+  "requiresAdmin": false
+}

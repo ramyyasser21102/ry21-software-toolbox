@@ -1,4 +1,4 @@
-function Add-TweakFilePaths {
+function Add-ChangeFilePaths {
     param(
         [Parameter(Mandatory)][psobject]$Manifest,
         [Parameter(Mandatory)][string]$ManifestPath
@@ -12,7 +12,9 @@ function Add-TweakFilePaths {
         }
         $Manifest | Add-Member -NotePropertyName "${field}Path" -NotePropertyValue $filePath -Force
     }
-    Assert-TweakFilesStayInsideAffectedKeys -Manifest $Manifest -ManifestPath $ManifestPath
+    if ($Manifest.kind -eq 'registry-tweak') {
+        Assert-TweakFilesStayInsideAffectedKeys -Manifest $Manifest -ManifestPath $ManifestPath
+    }
 }
 
 function Assert-TweakFilesStayInsideAffectedKeys {
