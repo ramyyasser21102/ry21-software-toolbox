@@ -14,12 +14,20 @@ function Get-LicenseTypes {
     'open-source', 'freeware', 'free-personal-use'
 }
 
+function Get-VersionSourceTypes {
+    'github-releases'
+}
+
+function Get-InstallDetectionTypes {
+    'file-version'
+}
+
 function Get-RequiredManifestFields {
     param([Parameter(Mandatory)][string]$Kind)
 
     $fieldsEveryKindNeeds = 'name', 'kind', 'category', 'platforms', 'description'
     if ($Kind -eq 'software') {
-        return $fieldsEveryKindNeeds + 'licenseType', 'upstreamUrl'
+        return $fieldsEveryKindNeeds + 'licenseType', 'upstreamUrl', 'versionSource', 'installDetection'
     }
     return $fieldsEveryKindNeeds
 }

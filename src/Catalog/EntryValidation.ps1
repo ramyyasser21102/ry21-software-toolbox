@@ -41,6 +41,7 @@ function Get-InvalidValueErrors {
     if ($Manifest.kind -eq 'software') {
         $errors += Get-NotAllowedErrors -Label 'licenseType' -Values @($Manifest.licenseType) -Allowed (Get-LicenseTypes)
     }
+    $errors += Get-SourceErrors -Manifest $Manifest
     return $errors
 }
 
