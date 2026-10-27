@@ -24,13 +24,9 @@ function Get-VerifiedBuildRoot {
     return $buildRoot
 }
 
-function Update-SoftwareEntry {
-    [CmdletBinding(SupportsShouldProcess)]
+function Install-PortableEntry {
     param([Parameter(Mandatory)][psobject]$Entry)
 
-    if (-not $PSCmdlet.ShouldProcess($Entry.name, 'Download, verify and install the latest build')) {
-        return
-    }
     $stagingDirectory = Join-Path ([IO.Path]::GetTempPath()) "ry21-toolbox-$([guid]::NewGuid())"
     New-Item -ItemType Directory -Path $stagingDirectory | Out-Null
     try {
@@ -40,5 +36,19 @@ function Update-SoftwareEntry {
     finally {
         # Best-effort: a leftover temp folder must not mask the real outcome of the update.
         Remove-Item -LiteralPath $stagingDirectory -Recurse -Force -ErrorAction SilentlyContinue
+    }
+}
+
+function Update-SoftwareEntry {
+    [CmdletBinding(SupportsShouldProcess)]
+    param([Parameter(Mandatory)][psobject]$Entry)
+
+    if (-not $PSCmdlet.ShouldProcess($Entry.name, 'Download, verify and install the latest build')) {
+        return
+    }
+    switch ($Entry.delivery.type) {
+        'portable-zip' { Install-PortableEntry -Entry $Entry }
+        'winget' { Install-WingetPackage -PackageId $Entry.delivery.packageId -RequiresAdmin ([bool]$Entry.requiresAdmin) }
+        default { throw "Unsupported delivery type '$($Entry.delivery.type)'" }
     }
 }

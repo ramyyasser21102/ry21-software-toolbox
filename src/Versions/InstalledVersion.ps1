@@ -13,6 +13,7 @@ function Get-InstalledVersion {
 
     switch ($InstallDetection.type) {
         'file-version' { return Get-FileInstalledVersion -PathTemplate $InstallDetection.path }
+        'winget-list' { return Get-WingetInstalledVersion -PackageId $InstallDetection.packageId }
         default { throw "Unsupported install detection type '$($InstallDetection.type)'" }
     }
 }

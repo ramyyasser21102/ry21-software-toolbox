@@ -15,15 +15,15 @@ function Get-LicenseTypes {
 }
 
 function Get-VersionSourceTypes {
-    'github-releases'
+    'github-releases', 'winget'
 }
 
 function Get-InstallDetectionTypes {
-    'file-version'
+    'file-version', 'winget-list'
 }
 
 function Get-DeliveryTypes {
-    'portable-zip'
+    'portable-zip', 'winget'
 }
 
 function Get-ChecksumTypes {
@@ -35,7 +35,7 @@ function Get-RequiredManifestFields {
 
     $fieldsEveryKindNeeds = 'name', 'kind', 'category', 'platforms', 'description'
     if ($Kind -eq 'software') {
-        return $fieldsEveryKindNeeds + 'licenseType', 'upstreamUrl', 'versionSource', 'installDetection', 'delivery', 'verification'
+        return $fieldsEveryKindNeeds + 'licenseType', 'upstreamUrl', 'versionSource', 'installDetection', 'delivery'
     }
     return $fieldsEveryKindNeeds
 }

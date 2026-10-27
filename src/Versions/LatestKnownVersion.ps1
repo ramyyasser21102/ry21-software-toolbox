@@ -9,6 +9,7 @@ function Get-LatestKnownVersion {
 
     switch ($VersionSource.type) {
         'github-releases' { return Get-GitHubLatestVersion -Repository $VersionSource.repository }
+        'winget' { return Get-WingetLatestVersion -PackageId $VersionSource.packageId }
         default { throw "Unsupported version source type '$($VersionSource.type)'" }
     }
 }

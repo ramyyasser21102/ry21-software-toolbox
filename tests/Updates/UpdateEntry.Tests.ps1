@@ -3,6 +3,7 @@ BeforeAll {
     . "$PSScriptRoot/../../src/Updates/ReleaseAsset.ps1"
     . "$PSScriptRoot/../../src/Updates/Verification.ps1"
     . "$PSScriptRoot/../../src/Updates/PortableInstall.ps1"
+    . "$PSScriptRoot/../../src/Updates/WingetInstall.ps1"
     . "$PSScriptRoot/../../src/Updates/UpdateEntry.ps1"
 
     function Write-ToolArchive {
@@ -24,7 +25,7 @@ Describe 'Update-SoftwareEntry' {
         $installDirectory = Join-Path $workspace 'installed'
         $entry = [pscustomobject]@{
             versionSource    = [pscustomobject]@{ repository = 'owner/tool' }
-            delivery         = [pscustomobject]@{ assetName = 'tool-x64.zip' }
+            delivery         = [pscustomobject]@{ type = 'portable-zip'; assetName = 'tool-x64.zip' }
             verification     = [pscustomobject]@{ signer = 'none' }
             installDetection = [pscustomobject]@{ path = (Join-Path $installDirectory 'tool.exe') }
         }
@@ -79,5 +80,29 @@ Describe 'Update-SoftwareEntry' {
         { Update-SoftwareEntry -Entry $entry } | Should -Throw '*Signer check failed*'
 
         $installDirectory | Should -Not -Exist
+    }
+}
+
+Describe 'Update-SoftwareEntry for winget delivery' {
+    It 'installs the package and passes the requiresAdmin flag through' {
+        Mock Install-WingetPackage {}
+        $entry = [pscustomobject]@{
+            name           = 'example'
+            delivery       = [pscustomobject]@{ type = 'winget'; packageId = 'Example.Tool' }
+            requiresAdmin  = $true
+        }
+
+        Update-SoftwareEntry -Entry $entry
+
+        Should -Invoke Install-WingetPackage -Times 1 -ParameterFilter { $PackageId -eq 'Example.Tool' -and $RequiresAdmin -eq $true }
+    }
+
+    It 'treats a missing requiresAdmin as false' {
+        Mock Install-WingetPackage {}
+        $entry = [pscustomobject]@{ name = 'example'; delivery = [pscustomobject]@{ type = 'winget'; packageId = 'Example.Tool' } }
+
+        Update-SoftwareEntry -Entry $entry
+
+        Should -Invoke Install-WingetPackage -Times 1 -ParameterFilter { $RequiresAdmin -eq $false }
     }
 }

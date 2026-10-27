@@ -114,3 +114,37 @@ Describe 'Get-ManifestErrors for delivery and verification' {
         Get-ManifestErrors -Manifest $manifest | Should -Match "Unknown checksum type 'trust-me'"
     }
 }
+
+Describe 'Get-ManifestErrors for winget entries' {
+    BeforeEach {
+        $manifest = Get-ValidSoftwareManifest
+        $manifest.versionSource = [pscustomobject]@{ type = 'winget'; packageId = 'Example.Tool' }
+        $manifest.installDetection = [pscustomobject]@{ type = 'winget-list'; packageId = 'Example.Tool' }
+        $manifest.delivery = [pscustomobject]@{ type = 'winget'; packageId = 'Example.Tool' }
+        $manifest.PSObject.Properties.Remove('verification')
+    }
+
+    It 'accepts a winget entry without a verification block' {
+        Get-ManifestErrors -Manifest $manifest | Should -BeNullOrEmpty
+    }
+
+    It 'requires a package id for each winget part' {
+        $manifest.versionSource.packageId = ''
+        $manifest.installDetection.packageId = ''
+        $manifest.delivery.packageId = ''
+
+        (Get-ManifestErrors -Manifest $manifest).Count | Should -Be 3
+    }
+
+    It 'rejects a requiresAdmin that is not true or false' {
+        $manifest | Add-Member -NotePropertyName requiresAdmin -NotePropertyValue 'yes'
+
+        Get-ManifestErrors -Manifest $manifest | Should -Match "'requiresAdmin' must be true or false"
+    }
+
+    It 'still requires verification for portable zips' {
+        $manifest.delivery = [pscustomobject]@{ type = 'portable-zip'; assetName = 'tool.zip' }
+
+        Get-ManifestErrors -Manifest $manifest | Should -Match "needs a 'verification' block"
+    }
+}
