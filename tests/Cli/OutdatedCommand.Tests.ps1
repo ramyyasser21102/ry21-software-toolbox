@@ -1,5 +1,6 @@
 BeforeAll {
     . "$PSScriptRoot/../../src/Versions/VersionComparison.ps1"
+    . "$PSScriptRoot/../../src/Versions/GitHubRelease.ps1"
     . "$PSScriptRoot/../../src/Versions/LatestKnownVersion.ps1"
     . "$PSScriptRoot/../../src/Versions/InstalledVersion.ps1"
     . "$PSScriptRoot/../../src/Cli/OutdatedCommand.ps1"

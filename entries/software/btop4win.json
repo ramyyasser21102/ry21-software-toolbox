@@ -7,5 +7,7 @@
   "licenseType": "open-source",
   "upstreamUrl": "https://github.com/aristocratos/btop4win",
   "versionSource": { "type": "github-releases", "repository": "aristocratos/btop4win" },
+  "delivery": { "type": "portable-zip", "assetName": "btop4win-x64.zip" },
+  "verification": { "checksum": "github-asset-digest", "signer": "none" },
   "installDetection": { "type": "file-version", "path": "%LOCALAPPDATA%\\RY21Toolbox\\software\\btop4win\\btop4win.exe" }
 }

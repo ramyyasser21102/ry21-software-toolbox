@@ -1,6 +1,7 @@
 BeforeAll {
     . "$PSScriptRoot/../../src/Catalog/EntryVocabulary.ps1"
     . "$PSScriptRoot/../../src/Catalog/SourceValidation.ps1"
+    . "$PSScriptRoot/../../src/Catalog/DeliveryValidation.ps1"
     . "$PSScriptRoot/../../src/Catalog/EntryValidation.ps1"
     . "$PSScriptRoot/../../src/Catalog/CatalogLoader.ps1"
 
@@ -17,6 +18,8 @@ BeforeAll {
             upstreamUrl = 'https://example.com'
             versionSource    = @{ type = 'github-releases'; repository = 'owner/name' }
             installDetection = @{ type = 'file-version'; path = 'C:\\tool.exe' }
+            delivery         = @{ type = 'portable-zip'; assetName = 'tool.zip' }
+            verification     = @{ checksum = 'github-asset-digest'; signer = 'none' }
         } | ConvertTo-Json | Set-Content -Path (Join-Path $Directory $FileName)
     }
 }

@@ -7,6 +7,8 @@ function Get-SourceErrors {
     $errors = @()
     $errors += Get-VersionSourceErrors -VersionSource $Manifest.versionSource
     $errors += Get-InstallDetectionErrors -InstallDetection $Manifest.installDetection
+    $errors += Get-DeliveryErrors -Delivery $Manifest.delivery
+    $errors += Get-VerificationErrors -Verification $Manifest.verification
     return $errors
 }
 
